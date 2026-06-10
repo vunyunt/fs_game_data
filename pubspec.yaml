@@ -1,0 +1,12 @@
+name: fs_game_data
+description: A shared Dart package for managing arbitrary game data folders and nested local settings.
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.12.1
+
+dependencies:
+  path: ^1.9.1
+  protobuf: ^6.0.0
+  meta: ^1.17.0
