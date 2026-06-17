@@ -5,3 +5,4 @@ export 'src/game_data_manager.dart';
 export 'src/modules/json_game_data_module.dart';
 export 'src/modules/protobuf_game_data_module.dart';
 export 'src/modules/machine_id_module.dart';
+export 'src/utils/snowflake.dart';

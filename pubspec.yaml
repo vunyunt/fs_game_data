@@ -10,3 +10,4 @@ dependencies:
   path: ^1.9.1
   protobuf: ^6.0.0
   meta: ^1.17.0
+  fixnum: ^1.1.1
