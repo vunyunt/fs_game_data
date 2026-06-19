@@ -43,3 +43,19 @@ class MissingMachineIdException implements Exception {
   @override
   String toString() => 'Machine ID is not set for this data folder.';
 }
+
+class WrongApplicationIdException extends GameDataInitializationException {
+  final String directoryPath;
+  final String expected;
+  final String actual;
+  WrongApplicationIdException({
+    required this.directoryPath,
+    required this.expected,
+    required this.actual,
+  }) : super(
+         'Wrong application ID for data folder "$directoryPath": expected "$expected", found "$actual"',
+       );
+
+  @override
+  String toString() => 'WrongApplicationIdException: $message';
+}

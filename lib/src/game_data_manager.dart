@@ -1,16 +1,28 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:path/path.dart' as path;
 import 'game_data_module.dart';
 
 abstract class GameDataManager {
+  // The on-disk filename where the application ID is stored.
+  static const String _applicationIdFileName = '.application_id';
+
   final Directory rootDirectory;
+  final String applicationId;
 
   late final Directory dataDirectory;
   late final Directory localDirectory;
+  late final File _applicationIdFile;
 
-  GameDataManager({required this.rootDirectory}) {
+  GameDataManager({
+    required this.rootDirectory,
+    required this.applicationId,
+  }) {
     dataDirectory = Directory(path.join(rootDirectory.path, 'data'));
     localDirectory = Directory(path.join(rootDirectory.path, '.local'));
+    _applicationIdFile = File(
+      path.join(dataDirectory.path, _applicationIdFileName),
+    );
   }
 
   /// List of all game data modules managed by this coordinator.
@@ -32,6 +44,8 @@ abstract class GameDataManager {
     if (!await initializationIndicatorModule.exists()) {
       throw UninitializedNonEmptyDirectoryException(rootDirectory.path);
     }
+
+    await _verifyOrWriteApplicationId();
 
     for (final module in modules) {
       await module.load();
@@ -57,6 +71,8 @@ abstract class GameDataManager {
       await localDirectory.create(recursive: true);
     }
 
+    await _writeApplicationId();
+
     for (final module in modules) {
       await module.initialize();
     }
@@ -72,6 +88,33 @@ abstract class GameDataManager {
 
   Future<void> postLoad() async {}
   Future<void> postInitialize() async {}
+
+  Future<void> _verifyOrWriteApplicationId() async {
+    final existing = await _readApplicationId();
+    if (existing == null) {
+      await _writeApplicationId();
+      return;
+    }
+    if (existing != applicationId) {
+      throw WrongApplicationIdException(
+        directoryPath: rootDirectory.path,
+        expected: applicationId,
+        actual: existing,
+      );
+    }
+  }
+
+  Future<String?> _readApplicationId() async {
+    if (!await _applicationIdFile.exists()) return null;
+    return utf8.decode(await _applicationIdFile.readAsBytes()).trim();
+  }
+
+  Future<void> _writeApplicationId() async {
+    if (!await dataDirectory.exists()) {
+      await dataDirectory.create(recursive: true);
+    }
+    await _applicationIdFile.writeAsBytes(utf8.encode(applicationId));
+  }
 
   static Future<bool> isDirectoryEmpty(Directory dir) async {
     if (!await dir.exists()) return true;
